@@ -17,6 +17,9 @@ namespace YtDlpGui.AvaloniaApp.Services
         public DownloadRequest Request { get; }
         public DownloadStatus Status { get; internal set; } = DownloadStatus.Queued;
         public int Progress { get; internal set; } = 0;
+        public long DownloadedBytes { get; internal set; } = 0;
+        public long TotalBytes { get; internal set; } = 0;
+        public double DownloadSpeed { get; internal set; } = 0;
         public string? OutputPath { get; internal set; }
         internal CancellationTokenSource Cts { get; } = new();
         internal Task? Task { get; set; }
@@ -93,10 +96,15 @@ namespace YtDlpGui.AvaloniaApp.Services
                 process.OutputDataReceived += (_, e) =>
                 {
                     if (string.IsNullOrWhiteSpace(e.Data)) return;
-                    var p = TryParseProgress(e.Data);
-                    if (p.HasValue)
+                    
+                    var progressInfo = TryParseProgressLine(e.Data);
+                    if (progressInfo.HasValue)
                     {
-                        item.Progress = p.Value;
+                        var (percentage, downloaded, total, speed) = progressInfo.Value;
+                        item.Progress = percentage;
+                        item.DownloadedBytes = downloaded;
+                        item.TotalBytes = total;
+                        item.DownloadSpeed = speed;
                         progress?.Report(item);
                     }
                 };
@@ -104,10 +112,15 @@ namespace YtDlpGui.AvaloniaApp.Services
                 process.ErrorDataReceived += (_, e) =>
                 {
                     if (string.IsNullOrWhiteSpace(e.Data)) return;
-                    var p = TryParseProgress(e.Data);
-                    if (p.HasValue)
+                    
+                    var progressInfo = TryParseProgressLine(e.Data);
+                    if (progressInfo.HasValue)
                     {
-                        item.Progress = p.Value;
+                        var (percentage, downloaded, total, speed) = progressInfo.Value;
+                        item.Progress = percentage;
+                        item.DownloadedBytes = downloaded;
+                        item.TotalBytes = total;
+                        item.DownloadSpeed = speed;
                         progress?.Report(item);
                     }
                 };
@@ -163,6 +176,9 @@ namespace YtDlpGui.AvaloniaApp.Services
         }
 
         private static readonly Regex ProgressRegex = new("(?<pct>\\d{1,3})%", RegexOptions.Compiled);
+        private static readonly Regex DetailedProgressRegex = new(
+            @"(?<pct>\d{1,3}(?:\.\d+)?)%\s+of\s+(?<total>[\d.]+\w+)\s+at\s+(?<speed>[\d.]+\w+/s)|(?<pct>\d{1,3}(?:\.\d+)?)%", 
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static int? TryParseProgress(string line)
         {
@@ -172,6 +188,63 @@ namespace YtDlpGui.AvaloniaApp.Services
                 return Math.Clamp(pct, 0, 100);
             }
             return null;
+        }
+
+        private static (int percentage, long downloaded, long total, double speed)? TryParseProgressLine(string line)
+        {
+            var match = DetailedProgressRegex.Match(line);
+            if (!match.Success) return null;
+
+            if (!float.TryParse(match.Groups["pct"].Value, out var percentage))
+                return null;
+
+            var totalStr = match.Groups["total"].Value;
+            var speedStr = match.Groups["speed"].Value;
+
+            var total = ParseSize(totalStr);
+            var speed = ParseSpeed(speedStr);
+            var downloaded = (long)(total * percentage / 100.0);
+
+            return ((int)Math.Clamp(percentage, 0, 100), downloaded, total, speed);
+        }
+
+        private static long ParseSize(string sizeStr)
+        {
+            if (string.IsNullOrWhiteSpace(sizeStr)) return 0;
+
+            var match = Regex.Match(sizeStr, @"([\d.]+)(\w+)", RegexOptions.IgnoreCase);
+            if (!match.Success || !double.TryParse(match.Groups[1].Value, out var value))
+                return 0;
+
+            var unit = match.Groups[2].Value.ToUpperInvariant();
+            return unit switch
+            {
+                "B" => (long)value,
+                "KB" or "KIB" => (long)(value * 1024),
+                "MB" or "MIB" => (long)(value * 1024 * 1024),
+                "GB" or "GIB" => (long)(value * 1024 * 1024 * 1024),
+                "TB" or "TIB" => (long)(value * 1024L * 1024 * 1024 * 1024),
+                _ => (long)value
+            };
+        }
+
+        private static double ParseSpeed(string speedStr)
+        {
+            if (string.IsNullOrWhiteSpace(speedStr)) return 0;
+
+            var match = Regex.Match(speedStr, @"([\d.]+)(\w+)/s", RegexOptions.IgnoreCase);
+            if (!match.Success || !double.TryParse(match.Groups[1].Value, out var value))
+                return 0;
+
+            var unit = match.Groups[2].Value.ToUpperInvariant();
+            return unit switch
+            {
+                "B" => value,
+                "KB" or "KIB" => value * 1024,
+                "MB" or "MIB" => value * 1024 * 1024,
+                "GB" or "GIB" => value * 1024 * 1024 * 1024,
+                _ => value
+            };
         }
 
         private static string BuildArgs(DownloadRequest req)

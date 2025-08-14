@@ -22,12 +22,12 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
         public string NewUrl { get => _newUrl; set => SetField(ref _newUrl, value); }
         public string NewQuality { get => _newQuality; set => SetField(ref _newQuality, value); }
         public string[] Qualities { get; } = new[] { "Best", "Good (720p)", "Data Saver (480p)" };
-        public int MaxConcurrent { get => _maxConcurrent; set { if (SetField(ref _maxConcurrent, value)) _manager.SetMaxConcurrent(value); } }
         public string OutputFolder { get => _outputFolder; set => SetField(ref _outputFolder, value); }
+        public bool CanAddItem => !string.IsNullOrWhiteSpace(NewUrl);
+        public string ItemsStatusText => $"{Items.Count} downloads • {Items.Count(x => x.Status == DownloadStatus.Running)} active • {Items.Count(x => x.Status == DownloadStatus.Completed)} completed";
 
         private string _newUrl = string.Empty;
         private string _newQuality = "Best";
-        private int _maxConcurrent = 2;
         private string _outputFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
         public RelayCommand AddItemCommand { get; }
@@ -35,8 +35,7 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
         public RelayCommand StartAllCommand { get; }
         public RelayCommand PauseAllCommand { get; }
         public RelayCommand ClearCompletedCommand { get; }
-        public RelayCommand StartItemCommand { get; }
-        public RelayCommand PauseItemCommand { get; }
+        public RelayCommand ToggleItemCommand { get; }
         public RelayCommand RemoveItemCommand { get; }
         public RelayCommand OpenItemCommand { get; }
         public RelayCommand BrowseFolderCommand { get; }
@@ -50,13 +49,15 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
         public MainViewModel(IFolderPickerService folderPicker)
         {
             _folderPicker = folderPicker;
-            _manager = new DownloadManager(_maxConcurrent);
+            _manager = new DownloadManager(4); // Default to 4 concurrent downloads
 
             AddItemCommand = new RelayCommand(() =>
             {
                 if (string.IsNullOrWhiteSpace(NewUrl)) return;
                 var vm = AddItemInternal(NewUrl, NewQuality);
                 NewUrl = string.Empty;
+                OnPropertyChanged(nameof(CanAddItem));
+                OnPropertyChanged(nameof(ItemsStatusText));
             });
 
             AddAndStartCommand = new RelayCommand(() =>
@@ -65,16 +66,28 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
                 var vm = AddItemInternal(NewUrl, NewQuality);
                 StartItem(vm);
                 NewUrl = string.Empty;
+                OnPropertyChanged(nameof(CanAddItem));
+                OnPropertyChanged(nameof(ItemsStatusText));
             });
 
             StartAllCommand = new RelayCommand(() =>
             {
-                foreach (var it in Items.ToArray()) StartItem(it);
+                foreach (var it in Items.ToArray()) 
+                {
+                    if (it.Status == DownloadStatus.Queued || it.Status == DownloadStatus.Paused || it.Status == DownloadStatus.Failed)
+                        StartItem(it);
+                }
+                OnPropertyChanged(nameof(ItemsStatusText));
             });
 
             PauseAllCommand = new RelayCommand(() =>
             {
-                foreach (var it in Items.ToArray()) PauseItem(it);
+                foreach (var it in Items.ToArray()) 
+                {
+                    if (it.Status == DownloadStatus.Running)
+                        PauseItem(it);
+                }
+                OnPropertyChanged(nameof(ItemsStatusText));
             });
 
             ClearCompletedCommand = new RelayCommand(() =>
@@ -85,11 +98,33 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
                         Items.RemoveAt(i);
                 }
                 Reindex();
+                OnPropertyChanged(nameof(ItemsStatusText));
             });
 
-            StartItemCommand = new RelayCommand(p => { if (p is DownloadItemViewModel vm) StartItem(vm); });
-            PauseItemCommand = new RelayCommand(p => { if (p is DownloadItemViewModel vm) PauseItem(vm); });
-            RemoveItemCommand = new RelayCommand(p => { if (p is DownloadItemViewModel vm) { Items.Remove(vm); Reindex(); } });
+            ToggleItemCommand = new RelayCommand(p => 
+            { 
+                if (p is DownloadItemViewModel vm) 
+                {
+                    if (vm.Status == DownloadStatus.Running)
+                        PauseItem(vm);
+                    else if (vm.Status == DownloadStatus.Queued || vm.Status == DownloadStatus.Paused || vm.Status == DownloadStatus.Failed)
+                        StartItem(vm);
+                    OnPropertyChanged(nameof(ItemsStatusText));
+                }
+            });
+
+            RemoveItemCommand = new RelayCommand(p => 
+            { 
+                if (p is DownloadItemViewModel vm) 
+                { 
+                    if (vm.Status == DownloadStatus.Running)
+                        PauseItem(vm);
+                    Items.Remove(vm); 
+                    Reindex(); 
+                    OnPropertyChanged(nameof(ItemsStatusText));
+                } 
+            });
+
             OpenItemCommand = new RelayCommand(async p =>
             {
                 if (p is DownloadItemViewModel vm)
@@ -110,12 +145,37 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
             var vm = new DownloadItemViewModel
             {
                 Url = url.Trim(),
+                Title = ExtractTitleFromUrl(url.Trim()),
                 Quality = quality,
                 Status = DownloadStatus.Queued,
             };
             Items.Add(vm);
             Reindex();
             return vm;
+        }
+
+        private static string ExtractTitleFromUrl(string url)
+        {
+            try
+            {
+                var uri = new Uri(url);
+                if (uri.Host.Contains("youtube.com") || uri.Host.Contains("youtu.be"))
+                {
+                    return "YouTube Video";
+                }
+                else if (uri.Host.Contains("vimeo.com"))
+                {
+                    return "Vimeo Video";
+                }
+                else
+                {
+                    return $"Video from {uri.Host}";
+                }
+            }
+            catch
+            {
+                return "Video";
+            }
         }
 
         private void StartItem(DownloadItemViewModel vm)
@@ -134,7 +194,11 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
                 {
                     target.Progress = h.Progress;
                     target.Status = h.Status;
+                    target.DownloadedBytes = h.DownloadedBytes;
+                    target.TotalBytes = h.TotalBytes;
+                    target.DownloadSpeed = h.DownloadSpeed;
                 }
+                OnPropertyChanged(nameof(ItemsStatusText));
             });
             var handle = _manager.Enqueue(req, progress);
             vm.Id = handle.Id;
