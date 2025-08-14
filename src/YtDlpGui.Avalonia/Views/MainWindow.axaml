@@ -118,38 +118,117 @@
                     </StackPanel>
                     
                     <!-- Download List -->
-                    <DataGrid ItemsSource="{Binding Items}" 
-                             AutoGenerateColumns="False" 
-                             HeadersVisibility="All"
-                             CanUserReorderColumns="False"
-                             CanUserResizeColumns="True" 
-                             CanUserSortColumns="False" 
-                             GridLinesVisibility="All"
-                             RowHeight="60"
-                             Margin="1,0,1,1"
-                             IsVisible="{Binding HasItems}">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="#" 
-                                              Binding="{Binding Index}" 
-                                              Width="50"/>
-                            
-                            <DataGridTextColumn Header="URL" 
-                                              Binding="{Binding Url}" 
-                                              Width="*"/>
-                            
-                            <DataGridTextColumn Header="Format" 
-                                              Binding="{Binding Quality}" 
-                                              Width="150"/>
-                            
-                            <DataGridTextColumn Header="Status" 
-                                              Binding="{Binding StatusText}" 
-                                              Width="100"/>
-                            
-                            <DataGridTextColumn Header="Progress %" 
-                                              Binding="{Binding Progress}" 
-                                              Width="80"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <ScrollViewer IsVisible="{Binding HasItems}">
+                        <ItemsControl ItemsSource="{Binding Items}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Classes="card" 
+                                           Margin="0,0,0,12" 
+                                           Padding="20">
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" 
+                                             RowDefinitions="Auto,Auto">
+                                            
+                                            <!-- Index -->
+                                            <Border Grid.Column="0" Grid.RowSpan="2"
+                                                   Background="#0078D4" 
+                                                   CornerRadius="20" 
+                                                   Width="40" 
+                                                   Height="40"
+                                                   Margin="0,0,16,0"
+                                                   VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Index}" 
+                                                          FontWeight="Bold" 
+                                                          Foreground="White"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"/>
+                                            </Border>
+                                            
+                                            <!-- Video Info -->
+                                            <StackPanel Grid.Column="1" Grid.Row="0" 
+                                                       Spacing="4"
+                                                       Margin="0,0,16,0">
+                                                <TextBlock Text="{Binding Title}" 
+                                                          FontWeight="SemiBold" 
+                                                          FontSize="14"
+                                                          Foreground="#FFFFFF"/>
+                                                <TextBlock Text="{Binding Url}" 
+                                                          FontSize="12" 
+                                                          Foreground="#9CA3AF"
+                                                          TextWrapping="NoWrap"
+                                                          TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+                                            
+                                            <!-- Progress Bar -->
+                                            <StackPanel Grid.Column="1" Grid.Row="1" 
+                                                       Spacing="4"
+                                                       Margin="0,8,16,0">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <TextBlock Grid.Column="0"
+                                                              Text="{Binding SizeText}" 
+                                                              FontSize="11" 
+                                                              Foreground="#9CA3AF"/>
+                                                    <TextBlock Grid.Column="1"
+                                                              Text="{Binding Progress, StringFormat='{}{0}%'}" 
+                                                              FontSize="11" 
+                                                              Foreground="#9CA3AF"/>
+                                                </Grid>
+                                                <ProgressBar Value="{Binding Progress}" 
+                                                            Minimum="0" 
+                                                            Maximum="100"
+                                                            Height="6"/>
+                                            </StackPanel>
+                                            
+                                            <!-- Quality -->
+                                            <Border Grid.Column="2" Grid.RowSpan="2"
+                                                   Background="#2D2D30" 
+                                                   CornerRadius="6" 
+                                                   Padding="8,4"
+                                                   Margin="0,0,16,0"
+                                                   VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Quality}" 
+                                                          FontSize="11" 
+                                                          FontWeight="Medium"
+                                                          Foreground="#9CA3AF"/>
+                                            </Border>
+                                            
+                                            <!-- Status -->
+                                            <Border Grid.Column="3" Grid.RowSpan="2"
+                                                   Background="{Binding StatusColor}" 
+                                                   CornerRadius="6" 
+                                                   Padding="8,4"
+                                                   Margin="0,0,16,0"
+                                                   VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding StatusText}" 
+                                                          FontSize="11" 
+                                                          FontWeight="Medium"
+                                                          Foreground="White"/>
+                                            </Border>
+                                            
+                                            <!-- Actions -->
+                                            <StackPanel Grid.Column="4" Grid.RowSpan="2" 
+                                                       Orientation="Horizontal" 
+                                                       Spacing="8"
+                                                       VerticalAlignment="Center">
+                                                <Button Content="{Binding StartPauseText}"
+                                                       Classes="small success"
+                                                       Command="{Binding DataContext.ToggleItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                                       CommandParameter="{Binding}"/>
+                                                <Button Content="🗑"
+                                                       Classes="danger small"
+                                                       Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                                       CommandParameter="{Binding}"/>
+                                                <Button Content="📂"
+                                                       Classes="small"
+                                                       Command="{Binding DataContext.OpenItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                                       CommandParameter="{Binding}"
+                                                       IsVisible="{Binding IsCompleted}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
                 </Grid>
             </Grid>
         </Border>
