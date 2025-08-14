@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:YtDlpGui.AvaloniaApp.ViewModels"
         x:Class="YtDlpGui.AvaloniaApp.MainWindow"
-        Title="yt-dlp GUI - Professional Download Manager"
+        Title="Video Download Manager - Professional Downloader"
         Width="1200" Height="700"
         MinWidth="900" MinHeight="600"
         Background="#1E1E1E"
@@ -17,11 +17,11 @@
         <!-- Header -->
         <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,20">
             <StackPanel Orientation="Vertical">
-                <TextBlock Text="yt-dlp Download Manager" 
+                <TextBlock Text="Video Download Manager" 
                           FontSize="28" 
                           FontWeight="Bold"
                           Foreground="#FFFFFF"/>
-                <TextBlock Text="Download videos from YouTube and other platforms" 
+                <TextBlock Text="Download videos and audio from online platforms" 
                           FontSize="14" 
                           Foreground="#9CA3AF"
                           Margin="0,4,0,0"/>
@@ -49,9 +49,9 @@
                           Foreground="#FFFFFF"
                           Margin="0,0,0,16"/>
                 
-                <Grid Grid.Row="1" ColumnDefinitions="*,200,Auto,Auto" Margin="0,0,0,12">
+                <Grid Grid.Row="1" ColumnDefinitions="*,280,Auto,Auto" Margin="0,0,0,12">
                     <TextBox Grid.Column="0" 
-                            Watermark="Enter video URL (YouTube, Vimeo, etc.)" 
+                            Watermark="Enter video URL from any supported platform" 
                             Text="{Binding NewUrl, Mode=TwoWay}"
                             FontSize="14"
                             Margin="0,0,12,0"/>
@@ -74,7 +74,7 @@
                 
                 <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="16">
                     <TextBlock Text="💡 Tip:" FontWeight="Medium" Foreground="#0078D4"/>
-                    <TextBlock Text="Supports YouTube, Vimeo, Dailymotion, and 1000+ sites" Foreground="#9CA3AF"/>
+                    <TextBlock Text="Choose video quality (4K/1080p/720p/480p/360p) or audio-only formats (MP3/AAC/FLAC)" Foreground="#9CA3AF"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -99,97 +99,117 @@
                     </Grid>
                 </Border>
                 
-                <DataGrid Grid.Row="1" 
-                         ItemsSource="{Binding Items}" 
-                         AutoGenerateColumns="False" 
-                         HeadersVisibility="All"
-                         CanUserReorderColumns="False"
-                         CanUserResizeColumns="True" 
-                         CanUserSortColumns="False" 
-                         RowHeight="72"
-                         Margin="1,0,1,1">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="#" 
-                                          Binding="{Binding Index}" 
-                                          Width="50" 
-                                          IsReadOnly="True"/>
-                        
-                        <DataGridTemplateColumn Header="Video" Width="*" MinWidth="300">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Margin="12,8" Spacing="4">
-                                        <TextBlock Text="{Binding Title}" 
-                                                  FontWeight="Medium" 
-                                                  FontSize="14"
-                                                  TextWrapping="NoWrap"
-                                                  TextTrimming="CharacterEllipsis"/>
-                                        <TextBlock Text="{Binding Url}" 
-                                                  FontSize="12" 
-                                                  Foreground="#9CA3AF"
-                                                  TextWrapping="NoWrap"
-                                                  TextTrimming="CharacterEllipsis"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        
-                        <DataGridTextColumn Header="Quality" 
-                                          Binding="{Binding Quality}" 
-                                          Width="120"/>
-                        
-                        <DataGridTemplateColumn Header="Progress" Width="220">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Margin="12,8" Spacing="6">
-                                        <Grid ColumnDefinitions="*,Auto">
-                                            <TextBlock Grid.Column="0"
-                                                      Text="{Binding StatusText}" 
-                                                      FontSize="13" 
-                                                      FontWeight="Medium"
-                                                      Foreground="{Binding StatusColor}"/>
-                                            <TextBlock Grid.Column="1"
-                                                      Text="{Binding Progress, StringFormat='{}{0}%'}" 
+                <Grid Grid.Row="1">
+                    <!-- Empty State -->
+                    <StackPanel VerticalAlignment="Center" 
+                               HorizontalAlignment="Center" 
+                               Spacing="16"
+                               IsVisible="{Binding !Items.Count}">
+                        <TextBlock Text="📥" FontSize="48" HorizontalAlignment="Center" Foreground="#6B7280"/>
+                        <TextBlock Text="No downloads yet" 
+                                  FontSize="16" 
+                                  FontWeight="Medium" 
+                                  HorizontalAlignment="Center"
+                                  Foreground="#9CA3AF"/>
+                        <TextBlock Text="Add a video URL above to get started" 
+                                  FontSize="14" 
+                                  HorizontalAlignment="Center"
+                                  Foreground="#6B7280"/>
+                    </StackPanel>
+                    
+                    <!-- Download List -->
+                    <DataGrid ItemsSource="{Binding Items}" 
+                             AutoGenerateColumns="False" 
+                             HeadersVisibility="All"
+                             CanUserReorderColumns="False"
+                             CanUserResizeColumns="True" 
+                             CanUserSortColumns="False" 
+                             RowHeight="72"
+                             Margin="1,0,1,1"
+                             IsVisible="{Binding !!Items.Count}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" 
+                                              Binding="{Binding Index}" 
+                                              Width="50" 
+                                              IsReadOnly="True"/>
+                            
+                            <DataGridTemplateColumn Header="Video" Width="*" MinWidth="300">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="12,8" Spacing="4">
+                                            <TextBlock Text="{Binding Title}" 
+                                                      FontWeight="Medium" 
+                                                      FontSize="14"
+                                                      TextWrapping="NoWrap"
+                                                      TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding Url}" 
                                                       FontSize="12" 
-                                                      Foreground="#9CA3AF"/>
-                                        </Grid>
-                                        <ProgressBar Value="{Binding Progress}" 
-                                                    Minimum="0" 
-                                                    Maximum="100"/>
-                                        <TextBlock Text="{Binding SizeText}" 
-                                                  FontSize="11" 
-                                                  Foreground="#9CA3AF"
-                                                  HorizontalAlignment="Right"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        
-                        <DataGridTemplateColumn Header="Actions" Width="180">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" 
-                                               Spacing="8" 
-                                               Margin="12,8"
-                                               VerticalAlignment="Center">
-                                        <Button Content="{Binding StartPauseText}"
-                                               Classes="small success"
-                                               Command="{Binding DataContext.ToggleItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                                               CommandParameter="{Binding}"/>
-                                        <Button Content="🗑"
-                                               Classes="danger small"
-                                               Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                                               CommandParameter="{Binding}"/>
-                                        <Button Content="📂"
-                                               Classes="small"
-                                               Command="{Binding DataContext.OpenItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                                               CommandParameter="{Binding}"
-                                               IsVisible="{Binding IsCompleted}"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
+                                                      Foreground="#9CA3AF"
+                                                      TextWrapping="NoWrap"
+                                                      TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            
+                            <DataGridTextColumn Header="Format" 
+                                              Binding="{Binding Quality}" 
+                                              Width="200"/>
+                            
+                            <DataGridTemplateColumn Header="Progress" Width="220">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="12,8" Spacing="6">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0"
+                                                          Text="{Binding StatusText}" 
+                                                          FontSize="13" 
+                                                          FontWeight="Medium"
+                                                          Foreground="{Binding StatusColor}"/>
+                                                <TextBlock Grid.Column="1"
+                                                          Text="{Binding Progress, StringFormat='{}{0}%'}" 
+                                                          FontSize="12" 
+                                                          Foreground="#9CA3AF"/>
+                                            </Grid>
+                                            <ProgressBar Value="{Binding Progress}" 
+                                                        Minimum="0" 
+                                                        Maximum="100"/>
+                                            <TextBlock Text="{Binding SizeText}" 
+                                                      FontSize="11" 
+                                                      Foreground="#9CA3AF"
+                                                      HorizontalAlignment="Right"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            
+                            <DataGridTemplateColumn Header="Actions" Width="180">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" 
+                                                   Spacing="8" 
+                                                   Margin="12,8"
+                                                   VerticalAlignment="Center">
+                                            <Button Content="{Binding StartPauseText}"
+                                                   Classes="small success"
+                                                   Command="{Binding DataContext.ToggleItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                                   CommandParameter="{Binding}"/>
+                                            <Button Content="🗑"
+                                                   Classes="danger small"
+                                                   Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                                   CommandParameter="{Binding}"/>
+                                            <Button Content="📂"
+                                                   Classes="small"
+                                                   Command="{Binding DataContext.OpenItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                                   CommandParameter="{Binding}"
+                                                   IsVisible="{Binding IsCompleted}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
             </Grid>
         </Border>
 
@@ -208,7 +228,7 @@
             </StackPanel>
             
             <TextBlock Grid.Column="1"
-                      Text="Made with ❤️ using Avalonia &amp; yt-dlp"
+                      Text="Made with ❤️ for video enthusiasts"
                       FontSize="12"
                       Foreground="#6B7280"
                       VerticalAlignment="Center"/>

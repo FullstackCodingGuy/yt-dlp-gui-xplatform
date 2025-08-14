@@ -252,15 +252,63 @@ namespace YtDlpGui.AvaloniaApp.Services
             // Map friendly quality to yt-dlp format selector
             var fmt = req.Quality switch
             {
+                // Video formats
+                "Best Video (4K/1080p/720p)" => "bestvideo[height<=2160]+bestaudio/best",
+                "4K Video (2160p)" => "bestvideo[height<=2160]/best[height<=2160]",
+                "1080p Video" => "bestvideo[height<=1080]/best[height<=1080]",
+                "720p Video" => "bestvideo[height<=720]/best[height<=720]",
+                "480p Video" => "bestvideo[height<=480]/best[height<=480]",
+                "360p Video" => "bestvideo[height<=360]/best[height<=360]",
+                
+                // Audio only formats
+                "Audio Only - Best Quality" => "bestaudio/best",
+                "Audio Only - MP3 320kbps" => "bestaudio[ext=mp3]/bestaudio",
+                "Audio Only - MP3 256kbps" => "bestaudio[abr<=256]/bestaudio",
+                "Audio Only - MP3 128kbps" => "bestaudio[abr<=128]/bestaudio",
+                "Audio Only - AAC Best" => "bestaudio[ext=m4a]/bestaudio",
+                "Audio Only - FLAC" => "bestaudio[ext=flac]/bestaudio",
+                "Audio Only - OGG" => "bestaudio[ext=ogg]/bestaudio",
+                
+                // Combined formats
+                "Video + Audio - Best" => "best",
+                "Video + Audio - 1080p + Best Audio" => "bestvideo[height<=1080]+bestaudio/best[height<=1080]",
+                "Video + Audio - 720p + Best Audio" => "bestvideo[height<=720]+bestaudio/best[height<=720]",
+                
+                // Legacy support
                 "Best" => "best",
                 "Good (720p)" => "bestvideo[height<=720]+bestaudio/best[height<=720]",
                 "Data Saver (480p)" => "bestvideo[height<=480]+bestaudio/best[height<=480]",
+                
                 _ => req.Quality // assume raw format selector
             };
 
+            // Add post-processing for audio-only downloads
+            var postProcessor = req.Quality.Contains("Audio Only") ? GetAudioPostProcessor(req.Quality) : "";
+
             // Output template in specified folder
             var output = Path.Combine(req.OutputFolder, "%(title)s.%(ext)s");
-            return $"-f \"{fmt}\" -o \"{output}\" \"{req.Url}\"";
+            
+            var args = $"-f \"{fmt}\" -o \"{output}\" \"{req.Url}\"";
+            if (!string.IsNullOrEmpty(postProcessor))
+            {
+                args += $" {postProcessor}";
+            }
+            
+            return args;
+        }
+
+        private static string GetAudioPostProcessor(string quality)
+        {
+            return quality switch
+            {
+                "Audio Only - MP3 320kbps" => "--extract-audio --audio-format mp3 --audio-quality 320K",
+                "Audio Only - MP3 256kbps" => "--extract-audio --audio-format mp3 --audio-quality 256K",
+                "Audio Only - MP3 128kbps" => "--extract-audio --audio-format mp3 --audio-quality 128K",
+                "Audio Only - AAC Best" => "--extract-audio --audio-format aac",
+                "Audio Only - FLAC" => "--extract-audio --audio-format flac",
+                "Audio Only - OGG" => "--extract-audio --audio-format vorbis",
+                _ => "--extract-audio --audio-format mp3 --audio-quality 0" // Best quality MP3
+            };
         }
     }
 }

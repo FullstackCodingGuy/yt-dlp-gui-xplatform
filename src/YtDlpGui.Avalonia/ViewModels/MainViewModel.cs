@@ -19,15 +19,35 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
         private readonly DownloadManager _manager;
         public ObservableCollection<DownloadItemViewModel> Items { get; } = new();
 
-        public string NewUrl { get => _newUrl; set => SetField(ref _newUrl, value); }
+        public string NewUrl { get => _newUrl; set { SetField(ref _newUrl, value); OnPropertyChanged(nameof(CanAddItem)); } }
         public string NewQuality { get => _newQuality; set => SetField(ref _newQuality, value); }
-        public string[] Qualities { get; } = new[] { "Best", "Good (720p)", "Data Saver (480p)" };
+        public string[] Qualities { get; } = new[] { 
+            // Video formats with resolutions
+            "Best Video (4K/1080p/720p)", 
+            "4K Video (2160p)", 
+            "1080p Video", 
+            "720p Video", 
+            "480p Video", 
+            "360p Video",
+            // Audio formats
+            "Audio Only - Best Quality", 
+            "Audio Only - MP3 320kbps", 
+            "Audio Only - MP3 256kbps", 
+            "Audio Only - MP3 128kbps",
+            "Audio Only - AAC Best",
+            "Audio Only - FLAC",
+            "Audio Only - OGG",
+            // Combined options
+            "Video + Audio - Best", 
+            "Video + Audio - 1080p + Best Audio",
+            "Video + Audio - 720p + Best Audio"
+        };
         public string OutputFolder { get => _outputFolder; set => SetField(ref _outputFolder, value); }
         public bool CanAddItem => !string.IsNullOrWhiteSpace(NewUrl);
         public string ItemsStatusText => $"{Items.Count} downloads • {Items.Count(x => x.Status == DownloadStatus.Running)} active • {Items.Count(x => x.Status == DownloadStatus.Completed)} completed";
 
         private string _newUrl = string.Empty;
-        private string _newQuality = "Best";
+        private string _newQuality = "Best Video (4K/1080p/720p)";
         private string _outputFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
         public RelayCommand AddItemCommand { get; }
@@ -151,6 +171,7 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
             };
             Items.Add(vm);
             Reindex();
+            OnPropertyChanged(nameof(ItemsStatusText));
             return vm;
         }
 
@@ -159,22 +180,11 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
             try
             {
                 var uri = new Uri(url);
-                if (uri.Host.Contains("youtube.com") || uri.Host.Contains("youtu.be"))
-                {
-                    return "YouTube Video";
-                }
-                else if (uri.Host.Contains("vimeo.com"))
-                {
-                    return "Vimeo Video";
-                }
-                else
-                {
-                    return $"Video from {uri.Host}";
-                }
+                return $"Video from {uri.Host}";
             }
             catch
             {
-                return "Video";
+                return "Video Content";
             }
         }
 
