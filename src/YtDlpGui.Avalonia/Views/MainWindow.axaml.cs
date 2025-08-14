@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using YtDlpGui.AvaloniaApp.ViewModels;
 
 namespace YtDlpGui.AvaloniaApp
 {
@@ -8,6 +9,7 @@ namespace YtDlpGui.AvaloniaApp
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new MainViewModel();
         }
 
         private void InitializeComponent()

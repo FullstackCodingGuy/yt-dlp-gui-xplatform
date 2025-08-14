@@ -1,12 +1,83 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:YtDlpGui.AvaloniaApp.ViewModels"
         x:Class="YtDlpGui.AvaloniaApp.MainWindow"
-        Title="yt-dlp GUI" Width="500" Height="360">
-    <Grid RowDefinitions="Auto,*" Margin="16">
-        <TextBlock Text="Hello Avalonia" FontSize="22"/>
-        <StackPanel Grid.Row="1" Spacing="8">
-            <TextBox Watermark="Enter a URL"/>
-            <Button Content="Download" HorizontalAlignment="Left" Width="120"/>
-        </StackPanel>
+        Title="yt-dlp GUI"
+    Width="860" Height="560"
+        mc:Ignorable="d">
+    <Design.DataContext>
+        <vm:MainViewModel />
+    </Design.DataContext>
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="16">
+        <!-- Header -->
+        <DockPanel Margin="0,0,0,12">
+            <TextBlock Text="yt-dlp GUI" FontSize="22" FontWeight="SemiBold"/>
+            <StackPanel Orientation="Horizontal" Spacing="8" DockPanel.Dock="Right">
+                <Button Content="Start All" Command="{Binding StartAllCommand}"/>
+                <Button Content="Pause All" Command="{Binding PauseAllCommand}"/>
+                <Button Content="Clear Completed" Command="{Binding ClearCompletedCommand}"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Add item row -->
+        <Border Grid.Row="1" CornerRadius="10" Padding="12" Margin="0,0,0,12" Background="#2A2A2A">
+            <Grid ColumnDefinitions="*,180,Auto,Auto" RowDefinitions="Auto,Auto">
+                <TextBox Grid.Column="0" Watermark="Paste URL..." Text="{Binding NewUrl, Mode=TwoWay}"/>
+                <ComboBox Grid.Column="1" ItemsSource="{Binding Qualities}" SelectedItem="{Binding NewQuality, Mode=TwoWay}"/>
+                <Button Grid.Column="2" Content="Add" Command="{Binding AddItemCommand}"/>
+                <Button Grid.Column="3" Content="Add &amp; Start" Command="{Binding AddAndStartCommand}"/>
+                <TextBlock Grid.Row="1" Grid.ColumnSpan="4" Foreground="#ccc" FontSize="12" Text="Example: https://www.youtube.com/watch?v=dQw4w9WgXcQ"/>
+            </Grid>
+        </Border>
+
+        <!-- Downloads list -->
+    <Border Grid.Row="2" CornerRadius="10" Padding="0" Background="#222222">
+            <DataGrid ItemsSource="{Binding Items}" AutoGenerateColumns="False" HeadersVisibility="All"
+                      GridLinesVisibility="None" BorderThickness="0" CanUserReorderColumns="False"
+                      CanUserResizeColumns="True" CanUserSortColumns="False" RowHeight="56">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="#" Binding="{Binding Index}" Width="40" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="URL" Binding="{Binding Url}" Width="*"/>
+                    <DataGridTextColumn Header="Quality" Binding="{Binding Quality}" Width="120"/>
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120" IsReadOnly="True"/>
+                    <DataGridTemplateColumn Header="Progress" Width="180">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Vertical" Spacing="4">
+                                    <ProgressBar Minimum="0" Maximum="100" Value="{Binding Progress}"/>
+                                    <TextBlock Text="{Binding Progress, StringFormat='{}{0}%'}" FontSize="11" HorizontalAlignment="Right"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Actions" Width="220">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Button Content="Start" Command="{Binding DataContext.StartItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"/>
+                                    <Button Content="Pause" Command="{Binding DataContext.PauseItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"/>
+                                    <Button Content="Open" Command="{Binding DataContext.OpenItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"/>
+                                    <Button Content="Remove" Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- Footer -->
+        <DockPanel Grid.Row="3" Margin="0,12,0,0" LastChildFill="False">
+            <TextBlock Text="Concurrent: " VerticalAlignment="Center"/>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Slider Width="180" Minimum="1" Maximum="8" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding MaxConcurrent, Mode=TwoWay}"/>
+                <TextBlock Text="{Binding MaxConcurrent}" VerticalAlignment="Center"/>
+            </StackPanel>
+            <TextBlock Text="  Save to: " VerticalAlignment="Center"/>
+            <TextBox Width="360" Text="{Binding OutputFolder, Mode=TwoWay}"/>
+            <Button Content="Browse" DockPanel.Dock="Right" Command="{Binding BrowseFolderCommand}"/>
+        </DockPanel>
     </Grid>
 </Window>
