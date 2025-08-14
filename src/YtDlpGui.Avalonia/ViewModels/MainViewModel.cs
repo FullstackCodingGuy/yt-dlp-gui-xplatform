@@ -45,6 +45,8 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
         public string OutputFolder { get => _outputFolder; set => SetField(ref _outputFolder, value); }
         public bool CanAddItem => !string.IsNullOrWhiteSpace(NewUrl);
         public string ItemsStatusText => $"{Items.Count} downloads • {Items.Count(x => x.Status == DownloadStatus.Running)} active • {Items.Count(x => x.Status == DownloadStatus.Completed)} completed";
+        public bool HasItems => Items.Count > 0;
+        public bool HasNoItems => Items.Count == 0;
 
         private string _newUrl = string.Empty;
         private string _newQuality = "Best Video (4K/1080p/720p)";
@@ -119,6 +121,8 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
                 }
                 Reindex();
                 OnPropertyChanged(nameof(ItemsStatusText));
+                OnPropertyChanged(nameof(HasItems));
+                OnPropertyChanged(nameof(HasNoItems));
             });
 
             ToggleItemCommand = new RelayCommand(p => 
@@ -142,6 +146,8 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
                     Items.Remove(vm); 
                     Reindex(); 
                     OnPropertyChanged(nameof(ItemsStatusText));
+                    OnPropertyChanged(nameof(HasItems));
+                    OnPropertyChanged(nameof(HasNoItems));
                 } 
             });
 
@@ -172,6 +178,8 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
             Items.Add(vm);
             Reindex();
             OnPropertyChanged(nameof(ItemsStatusText));
+            OnPropertyChanged(nameof(HasItems));
+            OnPropertyChanged(nameof(HasNoItems));
             return vm;
         }
 

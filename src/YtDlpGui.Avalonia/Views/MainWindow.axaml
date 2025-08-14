@@ -104,7 +104,7 @@
                     <StackPanel VerticalAlignment="Center" 
                                HorizontalAlignment="Center" 
                                Spacing="16"
-                               IsVisible="{Binding !Items.Count}">
+                               IsVisible="{Binding HasNoItems}">
                         <TextBlock Text="📥" FontSize="48" HorizontalAlignment="Center" Foreground="#6B7280"/>
                         <TextBlock Text="No downloads yet" 
                                   FontSize="16" 
@@ -124,89 +124,30 @@
                              CanUserReorderColumns="False"
                              CanUserResizeColumns="True" 
                              CanUserSortColumns="False" 
-                             RowHeight="72"
+                             GridLinesVisibility="All"
+                             RowHeight="60"
                              Margin="1,0,1,1"
-                             IsVisible="{Binding !!Items.Count}">
+                             IsVisible="{Binding HasItems}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" 
                                               Binding="{Binding Index}" 
-                                              Width="50" 
-                                              IsReadOnly="True"/>
+                                              Width="50"/>
                             
-                            <DataGridTemplateColumn Header="Video" Width="*" MinWidth="300">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Margin="12,8" Spacing="4">
-                                            <TextBlock Text="{Binding Title}" 
-                                                      FontWeight="Medium" 
-                                                      FontSize="14"
-                                                      TextWrapping="NoWrap"
-                                                      TextTrimming="CharacterEllipsis"/>
-                                            <TextBlock Text="{Binding Url}" 
-                                                      FontSize="12" 
-                                                      Foreground="#9CA3AF"
-                                                      TextWrapping="NoWrap"
-                                                      TextTrimming="CharacterEllipsis"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="URL" 
+                                              Binding="{Binding Url}" 
+                                              Width="*"/>
                             
                             <DataGridTextColumn Header="Format" 
                                               Binding="{Binding Quality}" 
-                                              Width="200"/>
+                                              Width="150"/>
                             
-                            <DataGridTemplateColumn Header="Progress" Width="220">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Margin="12,8" Spacing="6">
-                                            <Grid ColumnDefinitions="*,Auto">
-                                                <TextBlock Grid.Column="0"
-                                                          Text="{Binding StatusText}" 
-                                                          FontSize="13" 
-                                                          FontWeight="Medium"
-                                                          Foreground="{Binding StatusColor}"/>
-                                                <TextBlock Grid.Column="1"
-                                                          Text="{Binding Progress, StringFormat='{}{0}%'}" 
-                                                          FontSize="12" 
-                                                          Foreground="#9CA3AF"/>
-                                            </Grid>
-                                            <ProgressBar Value="{Binding Progress}" 
-                                                        Minimum="0" 
-                                                        Maximum="100"/>
-                                            <TextBlock Text="{Binding SizeText}" 
-                                                      FontSize="11" 
-                                                      Foreground="#9CA3AF"
-                                                      HorizontalAlignment="Right"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Status" 
+                                              Binding="{Binding StatusText}" 
+                                              Width="100"/>
                             
-                            <DataGridTemplateColumn Header="Actions" Width="180">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal" 
-                                                   Spacing="8" 
-                                                   Margin="12,8"
-                                                   VerticalAlignment="Center">
-                                            <Button Content="{Binding StartPauseText}"
-                                                   Classes="small success"
-                                                   Command="{Binding DataContext.ToggleItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                                                   CommandParameter="{Binding}"/>
-                                            <Button Content="🗑"
-                                                   Classes="danger small"
-                                                   Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                                                   CommandParameter="{Binding}"/>
-                                            <Button Content="📂"
-                                                   Classes="small"
-                                                   Command="{Binding DataContext.OpenItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                                                   CommandParameter="{Binding}"
-                                                   IsVisible="{Binding IsCompleted}"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Progress %" 
+                                              Binding="{Binding Progress}" 
+                                              Width="80"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>

@@ -18,6 +18,11 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
         private long _totalBytes;
         private double _downloadSpeed;
 
+        public DownloadItemViewModel()
+        {
+            _id = Guid.NewGuid();
+        }
+
         public Guid Id { get => _id; set => SetField(ref _id, value); }
         public int Index { get => _index; set => SetField(ref _index, value); }
         public string Url { get => _url; set => SetField(ref _url, value); }
