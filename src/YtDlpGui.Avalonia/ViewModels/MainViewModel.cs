@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -19,7 +20,7 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
         private readonly DownloadManager _manager;
         public ObservableCollection<DownloadItemViewModel> Items { get; } = new();
 
-        public string NewUrl { get => _newUrl; set { SetField(ref _newUrl, value); OnPropertyChanged(nameof(CanAddItem)); } }
+        public string NewUrl { get => _newUrl; set { SetField(ref _newUrl, value); OnPropertyChanged(nameof(CanAddItem)); OnPropertyChanged(nameof(UrlValidationMessage)); } }
         public string NewQuality { get => _newQuality; set => SetField(ref _newQuality, value); }
         public string[] Qualities { get; } = new[] { 
             // Video formats with resolutions
@@ -43,8 +44,9 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
             "Video + Audio - 720p + Best Audio"
         };
         public string OutputFolder { get => _outputFolder; set => SetField(ref _outputFolder, value); }
-        public bool CanAddItem => !string.IsNullOrWhiteSpace(NewUrl);
-        public string ItemsStatusText => $"{Items.Count} downloads • {Items.Count(x => x.Status == DownloadStatus.Running)} active • {Items.Count(x => x.Status == DownloadStatus.Completed)} completed";
+        public bool CanAddItem => !string.IsNullOrWhiteSpace(NewUrl) && IsValidUrl(NewUrl);
+        public string UrlValidationMessage => GetUrlValidationMessage();
+        public string ItemsStatusText => GetItemsStatusText();
         public bool HasItems => Items.Count > 0;
         public bool HasNoItems => Items.Count == 0;
 
@@ -75,21 +77,41 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
 
             AddItemCommand = new RelayCommand(() =>
             {
-                if (string.IsNullOrWhiteSpace(NewUrl)) return;
-                var vm = AddItemInternal(NewUrl, NewQuality);
-                NewUrl = string.Empty;
-                OnPropertyChanged(nameof(CanAddItem));
-                OnPropertyChanged(nameof(ItemsStatusText));
+                if (!CanAddItem) return;
+                
+                try
+                {
+                    var vm = AddItemInternal(NewUrl, NewQuality);
+                    NewUrl = string.Empty;
+                    OnPropertyChanged(nameof(CanAddItem));
+                    OnPropertyChanged(nameof(UrlValidationMessage));
+                    OnPropertyChanged(nameof(ItemsStatusText));
+                }
+                catch (Exception ex)
+                {
+                    // In a real application, you might want to show this error to the user
+                    System.Diagnostics.Debug.WriteLine($"Error adding item: {ex.Message}");
+                }
             });
 
             AddAndStartCommand = new RelayCommand(() =>
             {
-                if (string.IsNullOrWhiteSpace(NewUrl)) return;
-                var vm = AddItemInternal(NewUrl, NewQuality);
-                StartItem(vm);
-                NewUrl = string.Empty;
-                OnPropertyChanged(nameof(CanAddItem));
-                OnPropertyChanged(nameof(ItemsStatusText));
+                if (!CanAddItem) return;
+                
+                try
+                {
+                    var vm = AddItemInternal(NewUrl, NewQuality);
+                    StartItem(vm);
+                    NewUrl = string.Empty;
+                    OnPropertyChanged(nameof(CanAddItem));
+                    OnPropertyChanged(nameof(UrlValidationMessage));
+                    OnPropertyChanged(nameof(ItemsStatusText));
+                }
+                catch (Exception ex)
+                {
+                    // In a real application, you might want to show this error to the user
+                    System.Diagnostics.Debug.WriteLine($"Error adding and starting item: {ex.Message}");
+                }
             });
 
             StartAllCommand = new RelayCommand(() =>
@@ -131,8 +153,10 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
                 {
                     if (vm.Status == DownloadStatus.Running)
                         PauseItem(vm);
-                    else if (vm.Status == DownloadStatus.Queued || vm.Status == DownloadStatus.Paused || vm.Status == DownloadStatus.Failed)
+                    else if (vm.Status == DownloadStatus.Queued || vm.Status == DownloadStatus.Paused)
                         StartItem(vm);
+                    else if (vm.Status == DownloadStatus.Failed)
+                        RetryItem(vm);
                     OnPropertyChanged(nameof(ItemsStatusText));
                 }
             });
@@ -215,6 +239,7 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
                     target.DownloadedBytes = h.DownloadedBytes;
                     target.TotalBytes = h.TotalBytes;
                     target.DownloadSpeed = h.DownloadSpeed;
+                    target.ErrorMessage = h.ErrorMessage;
                 }
                 OnPropertyChanged(nameof(ItemsStatusText));
             });
@@ -230,6 +255,21 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
                 _manager.Cancel(vm.Id);
                 vm.Status = DownloadStatus.Paused; // reflecting local state; future resume would re-enqueue
             }
+        }
+
+        private void RetryItem(DownloadItemViewModel vm)
+        {
+            // Simply restart the item using the existing StartItem method
+            // First reset the view model state
+            vm.Progress = 0;
+            vm.DownloadedBytes = 0;
+            vm.TotalBytes = 0;
+            vm.DownloadSpeed = 0;
+            vm.ErrorMessage = null;
+            vm.Status = DownloadStatus.Queued;
+            
+            // Then start it again
+            StartItem(vm);
         }
 
         private void Reindex()
@@ -273,6 +313,55 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
             }
             catch { }
             return Task.CompletedTask;
+        }
+
+        private static bool IsValidUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                return false;
+
+            try
+            {
+                var uri = new Uri(url);
+                return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private string GetUrlValidationMessage()
+        {
+            if (string.IsNullOrWhiteSpace(NewUrl))
+                return string.Empty;
+
+            if (!IsValidUrl(NewUrl))
+                return "Please enter a valid HTTP/HTTPS URL";
+
+            return string.Empty;
+        }
+
+        private string GetItemsStatusText()
+        {
+            var total = Items.Count;
+            var running = Items.Count(x => x.Status == DownloadStatus.Running);
+            var completed = Items.Count(x => x.Status == DownloadStatus.Completed);
+            var failed = Items.Count(x => x.Status == DownloadStatus.Failed);
+            
+            if (total == 0)
+                return "No downloads in queue";
+                
+            var parts = new List<string> { $"{total} downloads" };
+            
+            if (running > 0)
+                parts.Add($"{running} active");
+            if (completed > 0)
+                parts.Add($"{completed} completed");
+            if (failed > 0)
+                parts.Add($"{failed} failed");
+                
+            return string.Join(" • ", parts);
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

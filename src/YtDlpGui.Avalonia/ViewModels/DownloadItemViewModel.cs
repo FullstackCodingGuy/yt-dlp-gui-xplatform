@@ -17,6 +17,7 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
         private long _downloadedBytes;
         private long _totalBytes;
         private double _downloadSpeed;
+        private string? _errorMessage;
 
         public DownloadItemViewModel()
         {
@@ -28,11 +29,12 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
         public string Url { get => _url; set => SetField(ref _url, value); }
         public string Title { get => _title; set => SetField(ref _title, value); }
         public string Quality { get => _quality; set => SetField(ref _quality, value); }
-        public DownloadStatus Status { get => _status; set { SetField(ref _status, value); OnPropertyChanged(nameof(StatusText)); OnPropertyChanged(nameof(StatusColor)); OnPropertyChanged(nameof(StartPauseText)); OnPropertyChanged(nameof(StartPauseClass)); OnPropertyChanged(nameof(IsCompleted)); } }
+        public DownloadStatus Status { get => _status; set { SetField(ref _status, value); OnPropertyChanged(nameof(StatusText)); OnPropertyChanged(nameof(StatusColor)); OnPropertyChanged(nameof(StartPauseText)); OnPropertyChanged(nameof(StartPauseClass)); OnPropertyChanged(nameof(IsCompleted)); OnPropertyChanged(nameof(HasError)); OnPropertyChanged(nameof(DisplayText)); } }
         public int Progress { get => _progress; set => SetField(ref _progress, value); }
         public long DownloadedBytes { get => _downloadedBytes; set { SetField(ref _downloadedBytes, value); OnPropertyChanged(nameof(SizeText)); } }
         public long TotalBytes { get => _totalBytes; set { SetField(ref _totalBytes, value); OnPropertyChanged(nameof(SizeText)); } }
         public double DownloadSpeed { get => _downloadSpeed; set => SetField(ref _downloadSpeed, value); }
+        public string? ErrorMessage { get => _errorMessage; set { SetField(ref _errorMessage, value); OnPropertyChanged(nameof(HasError)); OnPropertyChanged(nameof(DisplayText)); } }
 
         public string StatusText => Status switch
         {
@@ -82,6 +84,10 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
         };
 
         public bool IsCompleted => Status == DownloadStatus.Completed;
+
+        public bool HasError => Status == DownloadStatus.Failed && !string.IsNullOrWhiteSpace(ErrorMessage);
+
+        public string DisplayText => HasError ? ErrorMessage! : Title;
 
         public string SizeText
         {
