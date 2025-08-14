@@ -1,0 +1,3 @@
+# Keep Avalonia XAML code-behind partial class naming conventions
+[*.axaml.cs]
+csharp_style_namespace_declarations = file_scoped:suggestion

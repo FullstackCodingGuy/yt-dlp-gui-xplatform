@@ -1,0 +1,12 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="YtDlpGui.AvaloniaApp.MainWindow"
+        Title="yt-dlp GUI" Width="500" Height="360">
+    <Grid RowDefinitions="Auto,*" Margin="16">
+        <TextBlock Text="Hello Avalonia" FontSize="22"/>
+        <StackPanel Grid.Row="1" Spacing="8">
+            <TextBox Watermark="Enter a URL"/>
+            <Button Content="Download" HorizontalAlignment="Left" Width="120"/>
+        </StackPanel>
+    </Grid>
+</Window>
