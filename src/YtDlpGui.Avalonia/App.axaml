@@ -12,33 +12,132 @@
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Background" Value="#2D2D30"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#404040"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        
+        <Style Selector="Button:pointerover">
+            <Setter Property="Background" Value="#3D3D40"/>
+            <Setter Property="BorderBrush" Value="#505050"/>
+        </Style>
+        
+        <Style Selector="Button:pressed">
+            <Setter Property="Background" Value="#1D1D20"/>
+            <Setter Property="BorderBrush" Value="#303030"/>
+        </Style>
+        
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="#0078D4"/>
+            <Setter Property="BorderBrush" Value="#106EBE"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="MinHeight" Value="40"/>
+        </Style>
+        
+        <Style Selector="Button.primary:pointerover">
+            <Setter Property="Background" Value="#1084F0"/>
+            <Setter Property="BorderBrush" Value="#0078D4"/>
+        </Style>
+        
+        <Style Selector="Button.primary:pressed">
+            <Setter Property="Background" Value="#0066B8"/>
+            <Setter Property="BorderBrush" Value="#005A9E"/>
         </Style>
         
         <Style Selector="Button.accent">
-            <Setter Property="Background" Value="#0078D4"/>
+            <Setter Property="Background" Value="#6B46C1"/>
+            <Setter Property="BorderBrush" Value="#5B21B6"/>
             <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="MinHeight" Value="40"/>
+        </Style>
+        
+        <Style Selector="Button.accent:pointerover">
+            <Setter Property="Background" Value="#7C3AED"/>
+            <Setter Property="BorderBrush" Value="#6B46C1"/>
         </Style>
         
         <Style Selector="Button.success">
-            <Setter Property="Background" Value="#107C10"/>
+            <Setter Property="Background" Value="#10B981"/>
+            <Setter Property="BorderBrush" Value="#059669"/>
             <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="14,9"/>
+            <Setter Property="MinHeight" Value="38"/>
+        </Style>
+        
+        <Style Selector="Button.success:pointerover">
+            <Setter Property="Background" Value="#34D399"/>
+            <Setter Property="BorderBrush" Value="#10B981"/>
         </Style>
         
         <Style Selector="Button.warning">
-            <Setter Property="Background" Value="#FF8C00"/>
+            <Setter Property="Background" Value="#F59E0B"/>
+            <Setter Property="BorderBrush" Value="#D97706"/>
             <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="14,9"/>
+            <Setter Property="MinHeight" Value="38"/>
+        </Style>
+        
+        <Style Selector="Button.warning:pointerover">
+            <Setter Property="Background" Value="#FBBF24"/>
+            <Setter Property="BorderBrush" Value="#F59E0B"/>
         </Style>
         
         <Style Selector="Button.danger">
-            <Setter Property="Background" Value="#D13438"/>
+            <Setter Property="Background" Value="#EF4444"/>
+            <Setter Property="BorderBrush" Value="#DC2626"/>
             <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="14,9"/>
+            <Setter Property="MinHeight" Value="38"/>
+        </Style>
+        
+        <Style Selector="Button.danger:pointerover">
+            <Setter Property="Background" Value="#F87171"/>
+            <Setter Property="BorderBrush" Value="#EF4444"/>
         </Style>
         
         <Style Selector="Button.small">
-            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Padding" Value="8,6"/>
             <Setter Property="MinHeight" Value="28"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+        </Style>
+        
+        <Style Selector="Button.large">
+            <Setter Property="Padding" Value="18,12"/>
+            <Setter Property="MinHeight" Value="44"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        
+        <Style Selector="Button.icon">
+            <Setter Property="Padding" Value="8,8"/>
+            <Setter Property="MinWidth" Value="32"/>
+            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+        </Style>
+        
+        <Style Selector="Button.compact">
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="MinHeight" Value="32"/>
             <Setter Property="FontSize" Value="12"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="FontWeight" Value="Medium"/>
         </Style>
 
         <Style Selector="TextBox">
@@ -90,6 +189,57 @@
             <Setter Property="BorderBrush" Value="#3F3F46"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="12"/>
+        </Style>
+        
+        <!-- Enhanced Typography -->
+        <Style Selector="TextBlock.title">
+            <Setter Property="FontSize" Value="32"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        
+        <Style Selector="TextBlock.subtitle">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="#9CA3AF"/>
+        </Style>
+        
+        <Style Selector="TextBlock.section-title">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        
+        <Style Selector="TextBlock.body">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#D1D5DB"/>
+        </Style>
+        
+        <Style Selector="TextBlock.caption">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#9CA3AF"/>
+        </Style>
+        
+        <Style Selector="TextBlock.label">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="#F3F4F6"/>
+        </Style>
+        
+        <!-- Enhanced ComboBox -->
+        <Style Selector="ComboBox">
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="MinHeight" Value="44"/>
+            <Setter Property="Background" Value="#2D2D30"/>
+            <Setter Property="BorderBrush" Value="#404040"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+        </Style>
+        
+        <Style Selector="ComboBox:pointerover">
+            <Setter Property="Background" Value="#3D3D40"/>
+            <Setter Property="BorderBrush" Value="#505050"/>
         </Style>
     </Application.Styles>
 </Application>

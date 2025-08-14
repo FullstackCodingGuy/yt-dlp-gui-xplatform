@@ -58,11 +58,20 @@ namespace YtDlpGui.AvaloniaApp.ViewModels
 
         public string StartPauseText => Status switch
         {
-            DownloadStatus.Running => "⏸",
+            DownloadStatus.Running => "⏸️",
             DownloadStatus.Paused => "▶️",
             DownloadStatus.Failed => "🔄",
             DownloadStatus.Canceled => "▶️",
             _ => "▶️"
+        };
+
+        public string StartPauseTooltip => Status switch
+        {
+            DownloadStatus.Running => "Pause download",
+            DownloadStatus.Paused => "Resume download",
+            DownloadStatus.Failed => "Retry download",
+            DownloadStatus.Canceled => "Start download",
+            _ => "Start download"
         };
 
         public string StartPauseClass => Status switch
